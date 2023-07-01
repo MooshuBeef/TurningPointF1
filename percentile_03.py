@@ -13,7 +13,6 @@ import csv
 from timple.timedelta import strftimedelta
 from fastf1.core import Laps
 
-
 # enabling misc_mpl_mods will turn on minor grid lines that clutters the plot
 fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
@@ -23,30 +22,29 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 race = fastf1.get_session(2023, "Spain", 'R')
 race.load()
 
-#set a threshold of fast laps for cleanliness
+# set a threshold of fast laps for cleanliness
 # Typically it's 1.1, but for messy races like Monaco 2023, 2.0 is needed
 fastLapThreshold = 1.1
 
-#Set percentile value
-percentile_value=0.95
-
+# Set percentile value
+percentile_value = 0.95
 
 ###############################################################################
 # Get all the laps for the point finishers only.
 # Filter out slow laps (yellow flag, VSC, pitstops etc.)
 # as they distort the graph axis.
 
-#This spits out a 1 column array with the point finishers
+# This spits out a 1 column array with the point finishers
 point_finishers = race.drivers[:20]
-#print(point_finishers)
+# print(point_finishers)
 driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps(fastLapThreshold).reset_index()
-#driver_laps = driver_laps.reset_index()
+# driver_laps = driver_laps.reset_index()
 
 ###############################################################################
 # To plot the drivers by finishing order,
 # we need to get their three-letter abbreviations in the finishing order.
 finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
-#print(finishing_order)
+# print(finishing_order)
 
 ###############################################################################
 # We need to modify the DRIVER_COLORS palette.
@@ -54,8 +52,8 @@ finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
 # three-letter abbreviations.
 # We can do this with the DRIVER_TRANSLATE mapping.
 driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for abv,
-                 driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
-#print(driver_colors)
+driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
+# print(driver_colors)
 
 ###############################################################################
 # First create the violin plots to show the distributions.
@@ -66,15 +64,14 @@ fig, ax = plt.subplots(figsize=(20, 5))
 
 # Seaborn doesn't have proper timedelta support
 # so we have to convert timedelta to float (in seconds)
-#driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
+# driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
 
-#So actually let's get the sector times
+# So actually let's get the sector times
 driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
 driver_laps["Sector1(s)"] = driver_laps["Sector1Time"].dt.total_seconds()
 
-#Let's calculate the 90th percentile
-Sector1_percentile = np.percentile(driver_laps["Sector1(s)"],90)
-
+# Let's calculate the 90th percentile
+Sector1_percentile = np.percentile(driver_laps["Sector1(s)"], 90)
 
 print("point finishers: ", point_finishers)
 print(Sector1_percentile)
@@ -93,75 +90,60 @@ with open('driver_laps.csv', 'w', encoding='UTF8', newline='') as f:
 # Assuming the 'driver_laps' DataFrame is already defined and populated
 
 # Group the DataFrame by driver and calculate the average lap time
-#average_lap_times = driver_laps.groupby('Driver')['LapTime(s)'].mean()
+# average_lap_times = driver_laps.groupby('Driver')['LapTime(s)'].mean()
 
-#Let's do percentile instead
-#percentile_lap_times = np.percentile(driver_laps.groupby('Driver')['LapTime(s)'],90)
+# Let's do percentile instead
+# percentile_lap_times = np.percentile(driver_laps.groupby('Driver')['LapTime(s)'],90)
 
-#Another solution from https://stackoverflow.com/questions/19894939/calculate-arbitrary-percentile-on-pandas-groupby
-#point_finishers["lap_percentile"] = driver_laps.groupby(['DriverNumber'])['LapTime(s)'].quantile(0.90)
+# Another solution from https://stackoverflow.com/questions/19894939/calculate-arbitrary-percentile-on-pandas-groupby
+# point_finishers["lap_percentile"] = driver_laps.groupby(['DriverNumber'])['LapTime(s)'].quantile(0.90)
 
 
 # Group the DataFrame by driver and calculate the 90th percentile lap time
 percentile_lap_times = driver_laps.groupby('Driver')['LapTime(s)'].quantile(percentile_value)
 percentile_lap_times_keep = percentile_lap_times
 
+### Not sorting the below yet
 # Sort the average lap times in ascending order
-sorted_percentile_lap_times = percentile_lap_times.sort_values()
+# sorted_percentile_lap_times = percentile_lap_times.sort_values()
 
-#VALIDATION STEP: Print the Xth percentile lap time for each driver
-for driver, percentile_lap_times in sorted_percentile_lap_times.items():
-    print(f"{percentile_value*100:.0f}th percentile lap time for {driver}: {percentile_lap_times:.3f}")
+
+
+# VALIDATION STEP: Print the Xth percentile lap time for each driver
+for driver, percentile_lap_times in percentile_lap_times.items():
+    print(f"{percentile_value * 100:.0f}th percentile lap time for {driver}: {percentile_lap_times:.3f}")
 
 # Print the average lap time for each driver, not sorted
-#print(sorted_percentile_lap_times)
+# print(sorted_percentile_lap_times)
 
-#Find Median time:
-median_lap_time=sorted_percentile_lap_times.median()
+# Find Median time:
+median_lap_time = percentile_lap_times.median()
 print(f"Median time is {median_lap_time}")
 
-##### THIS IS THE BIG????
-#sorted_percentile_lap_times['LapTimeDelta'] = sorted_percentile_lap_times['LapTime(s)'] + sorted_percentile_lap_times['LapTime(s)']
 
-#sorted_percentile_lap_times['LapTimeDiff'] = sorted_percentile_lap_times['LapTime(s)'] - median_lap_time
-
-#Let's just try to subtract
-#difference_time = sorted_percentile_lap_times - median_lap_time
-
-#OK that worked can we write new columns
-"""
-array_sorted_percentile_lap_times = sorted_percentile_lap_times
-sorted_percentile_lap_times['LapDifference(s)'] = sorted_percentile_lap_times - median_lap_time
-sorted_percentile_lap_times['LapDifferencev2(s)'] = sorted_percentile_lap_times - median_lap_time
-print(sorted_percentile_lap_times)
-"""
-#Converting the series to an array
-#array_sorted_percentile_lap_times = sorted_percentile_lap_times.["LapTime(s)"].to_numpy()
-label_drivers = sorted_percentile_lap_times[:, 0]
-array_sorted_percentile_lap_times = np.array(sorted_percentile_lap_times.values, ndmin=2)
-
-
-
-
+# Converting the series to an array
+# array_sorted_percentile_lap_times = sorted_percentile_lap_times.["LapTime(s)"].to_numpy()
+label_drivers = percentile_lap_times[:, 0]
+array_sorted_percentile_lap_times = np.array(percentile_lap_times.values, ndmin=2)
 
 print(array_sorted_percentile_lap_times)
 print(array_sorted_percentile_lap_times)
 
-#print(array_sorted_percentile_lap_times)
+# print(array_sorted_percentile_lap_times)
 
 
 # Subtract the median from each value and create a new column
-#differences_lap = sorted_percentile_lap_times - median_lap_time
+# differences_lap = sorted_percentile_lap_times - median_lap_time
 
 # Add the differences column to the existing array
-#sorted_percentile_lap_times_update = np.column_stack((sorted_percentile_lap_times, differences_lap))
+# sorted_percentile_lap_times_update = np.column_stack((sorted_percentile_lap_times, differences_lap))
 
 # Print the updated array
-#print(sorted_percentile_lap_times_update)
+# print(sorted_percentile_lap_times_update)
 
 
 ################
-#VERIFY WITH CSV
+# VERIFY WITH CSV
 ################
 """
 with open('sorted_percentile_lap_times.csv', 'w', encoding='UTF8', newline='') as f:
@@ -172,19 +154,19 @@ with open('sorted_percentile_lap_times.csv', 'w', encoding='UTF8', newline='') a
 ################
 
 
-#Find difference to mean
+# Find difference to mean
 # Subtract the median from each value
-#lap_time_to_median = [x - median_lap_time for x in sorted_percentile_lap_times]
+# lap_time_to_median = [x - median_lap_time for x in sorted_percentile_lap_times]
 
-#Reference
-#driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
+# Reference
+# driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
 
 
-#Add a new row
-#sorted_percentile_lap_times["LapDiffToMedian(s)"] = [sorted_percentile_lap_times - median_lap_time]
-#print(sorted_percentile_lap_times)
+# Add a new row
+# sorted_percentile_lap_times["LapDiffToMedian(s)"] = [sorted_percentile_lap_times - median_lap_time]
+# print(sorted_percentile_lap_times)
 # Print the differences
-#for difference in lap_time_to_median:
+# for difference in lap_time_to_median:
 #    print(difference)
 """
 for driver, average_lap_time in average_lap_times.items():
@@ -193,11 +175,11 @@ for driver, average_lap_time in average_lap_times.items():
 """Fix this all later 
         # Sort the average lap times in ascending order
         sorted_percentile_lap_times = percentile_lap_times.sort_values()
-        
+
         # Print the sorted average lap times
         for driver, percentile_lap_times in sorted_percentile_lap_times.items():
             print(f"Average lap time for {driver}: {percentile_lap_times}")
-        
+
         with open('percentile_lap_times.csv', 'w', encoding='UTF8', newline='') as f:
             writer = csv.writer(f)
             # write the data
@@ -277,7 +259,7 @@ plt.show()
 """
 
 ########################
-#ALL GRAPH THINGS BELOW
+# ALL GRAPH THINGS BELOW
 ########################
 """
 ##############################################################################
