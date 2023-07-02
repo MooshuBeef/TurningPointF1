@@ -72,14 +72,34 @@ percentile_lap_times = driver_laps.groupby('Driver')['LapTime(s)'].quantile(perc
 # Sort the average lap times in ascending order
 # sorted_percentile_lap_times = percentile_lap_times.sort_values()
 
-# VALIDATION STEP: Print the Xth percentile lap time for each driver
-for driver, percentile_lap_times in percentile_lap_times.items():
-    print(f"{percentile_value * 100:.0f}th percentile lap time for {driver}: {percentile_lap_times:.3f}")
-
 # Find Median time from the 90th percentile
+#percentile_lap_times_int = percentile_lap_times.astype(int)
 median_lap_time = percentile_lap_times.median()
 print(f"Median time is {median_lap_time}")
 
+#array = percentile_lap_times.to_frame().values
+series_with_index = percentile_lap_times.reset_index()
+array = series_with_index.values
+
+# Create a DataFrame from the array
+final_data = pd.DataFrame(array)
+
+# Set the column names
+final_data.columns = ["DRIVERS", "LAP TIME"]
+
+final_data['diff to median'] = final_data['LAP TIME'] - median_lap_time
+
+
+#fastest_laps['LapTimeDelta'] = fastest_laps['LapTime'] - pole_lap['LapTime']
+
+
+print(final_data)
+# VALIDATION STEP: Print the Xth percentile lap time for each driver
+#for driver, percentile_lap_times in percentile_lap_times.items():
+#    print(f"{percentile_value * 100:.0f}th percentile lap time for {driver}: {percentile_lap_times:.3f}")
+
+#final_data = percentile_lap_times.values
+#print(final_data)
 #######################
 # NEXT STEP: Subtract the median lap time from each row.
 #######################
@@ -89,7 +109,6 @@ print(f"Median time is {median_lap_time}")
 
 # Converting the series to an array
 # array_sorted_percentile_lap_times = sorted_percentile_lap_times.["LapTime(s)"].to_numpy()
-label_drivers = percentile_lap_times[:, 0]
-array_sorted_percentile_lap_times = np.array(percentile_lap_times.values, ndmin=2)
-
-print(array_sorted_percentile_lap_times)
+#label_drivers = percentile_lap_times[:, 0]
+#array_sorted_percentile_lap_times = np.array(percentile_lap_times.values, ndmin=2)
+#print(array_sorted_percentile_lap_times)
