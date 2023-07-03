@@ -142,8 +142,6 @@ array_sorted_percentile_lap_times = np.array(sorted_percentile_lap_times.values,
 
 
 
-
-
 print(array_sorted_percentile_lap_times)
 print(array_sorted_percentile_lap_times)
 

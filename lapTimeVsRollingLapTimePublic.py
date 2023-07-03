@@ -8,12 +8,12 @@ import csv
 p.setup_mpl(misc_mpl_mods=False)
 
 #What Race and Driver are we looking at?
-driver = 'RUS'
-year, grand_prix, session = 2023,'SPAIN', 'R'
+driver = 'VER'
+year, grand_prix, session = 2023,'Austrian', 'R'
 
 #set a threshold of fast laps for cleanliness
 # Typically it's 1.1, but for messy races like Monaco 2023, 2.0 is needed
-fastLapThreshold = 1.1
+fastLapThreshold = 1.05
 
 # Load the race session and create the plot
 race = f.get_session(year, grand_prix, session)
