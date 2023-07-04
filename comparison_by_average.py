@@ -120,38 +120,65 @@ final_data_sorted['Sector3_DTM(s)'] = final_data_sorted['Sector3Time(s)'] - medi
 #fig, ax = plt.subplots(figsize=(20, 5))
 
 
-plot_size = [15,15]
-plot_ratios = [1, 1, 1, 1]
-fig, ax = plt.subplots(4, gridspec_kw={'height_ratios': plot_ratios})
-ax[0].bar(final_data_sorted['DRIVERS'], final_data_sorted['diff to median'],
+#plot_size = [9,7]
+#plot_title = f"{race.event.year} {race.event.EventName} - {race.name} - Average Times"
+plot_title = f"Average Times"
+#plot_ratios = [1, 1, 1, 1]
+
+#make the plot a little bigger
+#plt.rcParams['figure.figsize'] = plot_size
+
+#Set the plot
+
+
+
+#fig, axs = plt.subplots(4, gridspec_kw={'height_ratios': plot_ratios})
+#fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(7, 7))
+
+plt.figure(figsize=(26, 6))
+# Left column
+ax1 = plt.subplot(3, 2, (1, 5))
+# Right column
+ax2 = plt.subplot(3, 2, 2)
+ax3 = plt.subplot(3, 2, 4)
+ax4 = plt.subplot(3, 2, 6)
+axes = [ax1, ax2, ax3, ax4]
+
+ax1.title.set_text(plot_title)
+
+ax1.bar(final_data_sorted['DRIVERS'], final_data_sorted['diff to median'],
          edgecolor='grey') ##color=team_colors,
 #ax.set_yticks(fastest_laps.index)
-ax[0].set_yticklabels(final_data_sorted['diff to median'])
-ax[0].yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
+ax1.set_yticklabels(final_data_sorted['diff to median'])
+ax1.yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
+ax1.set_ylabel('Delta (s)')
 # show fastest at the top
-ax[0].invert_yaxis()
+ax1.invert_yaxis()
 
-ax[1].bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector1_DTM(s)'],
+ax2.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector1_DTM(s)'],
          edgecolor='grey') ##color=team_colors,
 #ax.set_yticks(fastest_laps.index)
-ax[1].set_yticklabels(final_data_sorted['Sector1_DTM(s)'])
-ax[1].yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
-ax[1].invert_yaxis()
+ax2.title.set_text(f"Sector 1")
+ax2.set_yticklabels(final_data_sorted['Sector1_DTM(s)'])
+ax2.yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
+ax2.set_ylabel('Delta (s)')
+ax2.invert_yaxis()
 
-ax[2].bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector2_DTM(s)'],
+ax3.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector2_DTM(s)'],
          edgecolor='grey') ##color=team_colors,
 #ax.set_yticks(fastest_laps.index)
-ax[2].set_yticklabels(final_data_sorted['Sector2_DTM(s)'])
-ax[2].yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
-ax[2].invert_yaxis()
+ax3.title.set_text(f"Sector 2")
+ax3.set_yticklabels(final_data_sorted['Sector2_DTM(s)'])
+ax3.yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
+ax3.invert_yaxis()
 
 
-ax[3].bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector3_DTM(s)'],
+ax4.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector3_DTM(s)'],
          edgecolor='grey') ##color=team_colors,
 #ax.set_yticks(fastest_laps.index)
-ax[3].set_yticklabels(final_data_sorted['Sector3_DTM(s)'])
-ax[3].yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
-ax[3].invert_yaxis()
+ax4.set_yticklabels(final_data_sorted['Sector3_DTM(s)'])
+ax4.yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
+ax4.invert_yaxis()
 # draw vertical lines behind the bars
 #ax.set_axisbelow(True)
 #ax.xaxis.grid(True, which='major', linestyle='--', color='black', zorder=-1000)
@@ -167,26 +194,3 @@ plt.suptitle(f"{session.event['EventName']} {session.event.year} Qualifying\n"
              f"Fastest Lap: {lap_time_string} ({pole_lap['Driver']})")
 """
 plt.show()
-"""
-"""
-
-
-
-# VALIDATION STEP: Print the Xth percentile lap time for each driver
-#for driver, percentile_lap_times in percentile_lap_times.items():
-#    print(f"{percentile_value * 100:.0f}th percentile lap time for {driver}: {percentile_lap_times:.3f}")
-
-#final_data = percentile_lap_times.values
-#print(final_data)
-#######################
-# NEXT STEP: Subtract the median lap time from each row.
-#######################
-
-# METHOD 1: Convert the 1D series into a 2D array, then subtract the median of 90th percentile times
-# from the other 90th percentile times
-
-# Converting the series to an array
-# array_sorted_percentile_lap_times = sorted_percentile_lap_times.["LapTime(s)"].to_numpy()
-#label_drivers = percentile_lap_times[:, 0]
-#array_sorted_percentile_lap_times = np.array(percentile_lap_times.values, ndmin=2)
-#print(array_sorted_percentile_lap_times)
