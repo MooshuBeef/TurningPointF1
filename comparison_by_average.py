@@ -13,13 +13,14 @@ import csv
 from timple.timedelta import strftimedelta
 from fastf1.core import Laps
 
+
 # enabling misc_mpl_mods will turn on minor grid lines that clutters the plot
 fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
 ###############################################################################
 # Load the race session
 
-race = fastf1.get_session(2023, "Austria", 'R')
+race = fastf1.get_session(2023, "Spain", 'R')
 race.load()
 
 # set a threshold of fast laps for cleanliness
@@ -39,6 +40,21 @@ point_finishers = race.drivers[:20]
 # print(point_finishers)
 driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps(fastLapThreshold).reset_index()
 # driver_laps = driver_laps.reset_index()
+
+
+###############################################################################
+# Get lap times before filtering
+lap_times_before_filtering = driver_laps[['LapTime', 'Driver']]
+
+# Filter out slow laps (yellow flag, VSC, pit stops, etc.)
+driver_laps_filtered = driver_laps.pick_quicklaps(fastLapThreshold)
+
+# Get lap times after filtering
+lap_times_after_filtering = driver_laps_filtered[['LapTime', 'Driver']]
+
+# Find the laps that were excluded
+excluded_laps = lap_times_before_filtering[~lap_times_before_filtering['LapTime'].isin(lap_times_after_filtering['LapTime'])]
+
 
 ###############################################################################
 # To plot the drivers by finishing order,
@@ -63,8 +79,6 @@ driver_laps["Sector3(s)"] = driver_laps["Sector3Time"].dt.total_seconds()
 
 # Let's calculate the 90th percentile
 #Sector1_percentile = np.percentile(driver_laps["Sector1(s)"], 90)
-
-#print("point finishers: ", point_finishers)
 
 
 # Group the DataFrame by driver and calculate the 90th percentile lap time
@@ -117,68 +131,167 @@ final_data_sorted['Sector3_DTM(s)'] = final_data_sorted['Sector3Time(s)'] - medi
 
 
 # create the figure
-#fig, ax = plt.subplots(figsize=(20, 5))
+plt.figure(figsize=(24, 10))
 
+#Plot Titles
+plt.suptitle(f"{race.event['EventName']} {race.event.year} Race\n Delta to Overall Average Lap (All Drivers)", y=0.98, fontsize=16)
+plot_title = f"By Lap Time"
 
-#plot_size = [9,7]
-#plot_title = f"{race.event.year} {race.event.EventName} - {race.name} - Average Times"
-plot_title = f"Average Times"
-#plot_ratios = [1, 1, 1, 1]
-
-#make the plot a little bigger
-#plt.rcParams['figure.figsize'] = plot_size
-
-#Set the plot
-
-
-
-#fig, axs = plt.subplots(4, gridspec_kw={'height_ratios': plot_ratios})
-#fig, axs = plt.subplots(nrows=3, ncols=2, figsize=(7, 7))
-
-plt.figure(figsize=(26, 6))
 # Left column
 ax1 = plt.subplot(3, 2, (1, 5))
+
 # Right column
 ax2 = plt.subplot(3, 2, 2)
-ax3 = plt.subplot(3, 2, 4)
-ax4 = plt.subplot(3, 2, 6)
+ax3 = plt.subplot(3, 2, 4, sharey=ax2)
+ax4 = plt.subplot(3, 2, 6, sharey=ax2)
 axes = [ax1, ax2, ax3, ax4]
 
-ax1.title.set_text(plot_title)
+plt.subplots_adjust(hspace=0.5)  # Increase the vertical spacing between subplots
+plt.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.9)
 
+
+ax1.title.set_text(plot_title)
 ax1.bar(final_data_sorted['DRIVERS'], final_data_sorted['diff to median'],
-         edgecolor='grey') ##color=team_colors,
+        color=final_data_sorted['DRIVERS'].map(driver_colors),
+        edgecolor='grey')
 #ax.set_yticks(fastest_laps.index)
 ax1.set_yticklabels(final_data_sorted['diff to median'])
 ax1.yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
 ax1.set_ylabel('Delta (s)')
 # show fastest at the top
 ax1.invert_yaxis()
+# remove driver names and tick marks along the bottom of the graph
+ax1.set_xticklabels([])
+ax1.set_xticks([])
+
 
 ax2.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector1_DTM(s)'],
-         edgecolor='grey') ##color=team_colors,
+         color=final_data_sorted['DRIVERS'].map(driver_colors), edgecolor='grey') ##color=team_colors,
 #ax.set_yticks(fastest_laps.index)
 ax2.title.set_text(f"Sector 1")
 ax2.set_yticklabels(final_data_sorted['Sector1_DTM(s)'])
 ax2.yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
 ax2.set_ylabel('Delta (s)')
 ax2.invert_yaxis()
+# remove driver names and tick marks along the bottom of the graph
+ax2.set_xticklabels([])
+ax2.set_xticks([])
+
 
 ax3.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector2_DTM(s)'],
-         edgecolor='grey') ##color=team_colors,
+         color=final_data_sorted['DRIVERS'].map(driver_colors), edgecolor='grey') ##color=team_colors,
 #ax.set_yticks(fastest_laps.index)
 ax3.title.set_text(f"Sector 2")
 ax3.set_yticklabels(final_data_sorted['Sector2_DTM(s)'])
 ax3.yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
 ax3.invert_yaxis()
-
+# remove driver names and tick marks along the bottom of the graph
+ax3.set_xticklabels([])
+ax3.set_xticks([])
 
 ax4.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector3_DTM(s)'],
-         edgecolor='grey') ##color=team_colors,
+         color=final_data_sorted['DRIVERS'].map(driver_colors), edgecolor='grey') ##color=team_colors,
 #ax.set_yticks(fastest_laps.index)
+ax4.title.set_text(f"Sector 3")
 ax4.set_yticklabels(final_data_sorted['Sector3_DTM(s)'])
 ax4.yaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
 ax4.invert_yaxis()
+# remove driver names and tick marks along the bottom of the graph
+ax4.set_xticklabels([])
+ax4.set_xticks([])
+
+
+###############################################################################
+# GRAPH 1 X AXIS LABEL FORMATTING
+# Modify the ax1.bar() function to color the bars based on the team
+bars = ax1.bar(final_data_sorted['DRIVERS'], final_data_sorted['diff to median'],
+               color=final_data_sorted['DRIVERS'].map(driver_colors),
+               edgecolor='grey')
+
+# Manually adjust the x-axis label positions to be below the bar for negative values
+for bar, value, label in zip(bars, final_data_sorted['diff to median'], final_data_sorted['DRIVERS']):
+    height = bar.get_height()
+    if value < 0:
+        # If the value is negative, place the label below the bar
+        ax1.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=10, fontweight='bold')
+    else:
+        # If the value is non-negative, place the label above the bar
+        ax1.text(bar.get_x() + bar.get_width() / 2, -0.05, label, ha='center', va='top', fontsize=10, fontweight='bold')
+
+
+###############################################################################
+# SECTOR 1 X AXIS LABEL FORMATTING
+# Modify the ax2.bar() function to color the bars based on the team
+bars2 = ax2.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector1_DTM(s)'],
+               color=final_data_sorted['DRIVERS'].map(driver_colors),
+               edgecolor='grey')
+
+# Manually adjust the x-axis label positions to be below the bar for negative values
+for bar, value, label in zip(bars2, final_data_sorted['Sector1_DTM(s)'], final_data_sorted['DRIVERS']):
+    height = bar.get_height()
+    if value < 0:
+        # If the value is negative, place the label below the bar
+        ax2.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=10, fontweight='bold')
+    else:
+        # If the value is non-negative, place the label above the bar
+        ax2.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=10, fontweight='bold')
+
+###############################################################################
+# SECTOR 2 X AXIS LABEL FORMATTING
+# Modify the ax3.bar() function to color the bars based on the team
+bars3 = ax3.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector2_DTM(s)'],
+               color=final_data_sorted['DRIVERS'].map(driver_colors),
+               edgecolor='grey')
+
+# Manually adjust the x-axis label positions to be below the bar for negative values
+for bar, value, label in zip(bars3, final_data_sorted['Sector2_DTM(s)'], final_data_sorted['DRIVERS']):
+    height = bar.get_height()
+    if value < 0:
+        # If the value is negative, place the label below the bar
+        ax3.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=10, fontweight='bold')
+    else:
+        # If the value is non-negative, place the label above the bar
+        ax3.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=10, fontweight='bold')
+
+###############################################################################
+# SECTOR 3 X AXIS LABEL FORMATTING
+# Modify the ax1.bar() function to color the bars based on the team
+bars4 = ax4.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector3_DTM(s)'],
+               color=final_data_sorted['DRIVERS'].map(driver_colors),
+               edgecolor='grey')
+
+# Manually adjust the x-axis label positions to be below the bar for negative values
+for bar, value, label in zip(bars4, final_data_sorted['Sector3_DTM(s)'], final_data_sorted['DRIVERS']):
+    height = bar.get_height()
+    if value < 0:
+        # If the value is negative, place the label below the bar
+        ax4.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=10, fontweight='bold')
+    else:
+        # If the value is non-negative, place the label above the bar
+        ax4.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=10, fontweight='bold')
+
+
+
+# Add gridlines to all subplots
+for ax in [ax1, ax2, ax3, ax4]:
+    ax.grid(which='major', axis='y', color='grey', alpha=0.7)
+    ax.set_axisbelow(True)  # Ensure gridlines appear below the bars
+
+#set minor gridlines in right column subplots
+for ax in [ax2, ax3, ax4]:
+    ax.yaxis.set_major_locator(plt.MultipleLocator(0.5))
+    ax.yaxis.set_minor_locator(plt.MultipleLocator(0.1))
+
+# Add minor gridlines
+for ax in [ax1, ax2, ax3, ax4]:
+    ax.grid(which='minor', linestyle='--', color='grey', alpha=0.5)
+    ax1.yaxis.set_minor_locator(plt.MultipleLocator(0.1))  # Add minor gridlines between each major
+
+# Set the font size of subplot titles individually
+for ax in plt.gcf().get_axes():
+    ax.set_title(ax.get_title(), fontsize=12)  # Set the font size (12 points in this example)
+
+
 # draw vertical lines behind the bars
 #ax.set_axisbelow(True)
 #ax.xaxis.grid(True, which='major', linestyle='--', color='black', zorder=-1000)
@@ -187,10 +300,23 @@ ax4.invert_yaxis()
 
 ##############################################################################
 # Finally, give the plot a meaningful title
-"""
-lap_time_string = strftimedelta(pole_lap['LapTime'], '%m:%s.%ms')
 
-plt.suptitle(f"{session.event['EventName']} {session.event.year} Qualifying\n"
-             f"Fastest Lap: {lap_time_string} ({pole_lap['Driver']})")
+#lap_time_string = strftimedelta(pole_lap['LapTime'], '%m:%s.%ms')
+
+
+
+# Add excluded laps information to the footer of the plot
+#footer_text = " ".join(f"{driver}: {time}" for driver, time in zip(excluded_laps['Driver'], excluded_laps['LapTime']))
+#plt.figtext(0.7, 0.01, footer_text, ha="center", fontsize=10, bbox={"facecolor": "white", "edgecolor": "gray", "pad": 5})
+
 """
+ax1.annotate((f"{driver}: {time}" for driver, time in zip(excluded_laps['Driver'], excluded_laps['LapTime'])),
+    xy=(0.5,-0.02),
+        xycoords='axes fraction',
+        ha='right',
+        va='center',
+        fontsize=10)
+"""
+plt.tight_layout()  # Adjust the layout to prevent text cutoff
+
 plt.show()
