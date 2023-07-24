@@ -20,7 +20,7 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 ###############################################################################
 # Load the race session
 
-race = fastf1.get_session(2023, "Spain", 'R')
+race = fastf1.get_session(2023, "Hungary", 'R')
 race.load()
 
 # set a threshold of fast laps for cleanliness
@@ -39,10 +39,10 @@ percentile_value = 0.95
 point_finishers = race.drivers[:20]
 # print(point_finishers)
 driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps(fastLapThreshold).reset_index()
-# driver_laps = driver_laps.reset_index()
-
 
 ###############################################################################
+# Trying to account for the laps that are excluded
+"""
 # Get lap times before filtering
 lap_times_before_filtering = driver_laps[['LapTime', 'Driver']]
 
@@ -54,7 +54,7 @@ lap_times_after_filtering = driver_laps_filtered[['LapTime', 'Driver']]
 
 # Find the laps that were excluded
 excluded_laps = lap_times_before_filtering[~lap_times_before_filtering['LapTime'].isin(lap_times_after_filtering['LapTime'])]
-
+"""
 
 ###############################################################################
 # To plot the drivers by finishing order,
@@ -123,7 +123,14 @@ final_data['Sector3Time(s)'] = sector3_array
 
 
 final_data['diff to median'] = final_data['LAP TIME'] - median_lap_time
-final_data_sorted = final_data.sort_values(by='diff to median')
+#final_data_sorted = final_data#.sort_values(by='diff to median')
+
+# Convert the "Drivers" column of the final_data DataFrame to a Categorical data type
+# with the custom order specified by the finishing_order list
+final_data["DRIVERS"] = pd.Categorical(final_data["DRIVERS"], categories=finishing_order, ordered=True)
+
+# Sort the DataFrame based on the custom order of the "Drivers" column
+final_data_sorted = final_data.sort_values(by="DRIVERS")
 
 final_data_sorted['Sector1_DTM(s)'] = final_data_sorted['Sector1Time(s)'] - median_sector_1
 final_data_sorted['Sector2_DTM(s)'] = final_data_sorted['Sector2Time(s)'] - median_sector_2
@@ -200,6 +207,11 @@ ax4.invert_yaxis()
 ax4.set_xticklabels([])
 ax4.set_xticks([])
 
+###############################################################################
+# Set font size of charts
+
+driverFontSize = 9
+
 
 ###############################################################################
 # GRAPH 1 X AXIS LABEL FORMATTING
@@ -213,10 +225,10 @@ for bar, value, label in zip(bars, final_data_sorted['diff to median'], final_da
     height = bar.get_height()
     if value < 0:
         # If the value is negative, place the label below the bar
-        ax1.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=10, fontweight='bold')
+        ax1.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=driverFontSize, fontweight='bold')
     else:
         # If the value is non-negative, place the label above the bar
-        ax1.text(bar.get_x() + bar.get_width() / 2, -0.05, label, ha='center', va='top', fontsize=10, fontweight='bold')
+        ax1.text(bar.get_x() + bar.get_width() / 2, -0.05, label, ha='center', va='top', fontsize=driverFontSize, fontweight='bold')
 
 
 ###############################################################################
@@ -231,10 +243,10 @@ for bar, value, label in zip(bars2, final_data_sorted['Sector1_DTM(s)'], final_d
     height = bar.get_height()
     if value < 0:
         # If the value is negative, place the label below the bar
-        ax2.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=10, fontweight='bold')
+        ax2.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=driverFontSize, fontweight='bold')
     else:
         # If the value is non-negative, place the label above the bar
-        ax2.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=10, fontweight='bold')
+        ax2.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=driverFontSize, fontweight='bold')
 
 ###############################################################################
 # SECTOR 2 X AXIS LABEL FORMATTING
@@ -248,10 +260,10 @@ for bar, value, label in zip(bars3, final_data_sorted['Sector2_DTM(s)'], final_d
     height = bar.get_height()
     if value < 0:
         # If the value is negative, place the label below the bar
-        ax3.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=10, fontweight='bold')
+        ax3.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=driverFontSize, fontweight='bold')
     else:
         # If the value is non-negative, place the label above the bar
-        ax3.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=10, fontweight='bold')
+        ax3.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=driverFontSize, fontweight='bold')
 
 ###############################################################################
 # SECTOR 3 X AXIS LABEL FORMATTING
@@ -265,10 +277,10 @@ for bar, value, label in zip(bars4, final_data_sorted['Sector3_DTM(s)'], final_d
     height = bar.get_height()
     if value < 0:
         # If the value is negative, place the label below the bar
-        ax4.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=10, fontweight='bold')
+        ax4.text(bar.get_x() + bar.get_width() / 2, height - 0.02, label, ha='center', va='bottom', fontsize=driverFontSize, fontweight='bold')
     else:
         # If the value is non-negative, place the label above the bar
-        ax4.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=10, fontweight='bold')
+        ax4.text(bar.get_x() + bar.get_width() / 2, -0.07, label, ha='center', va='top', fontsize=driverFontSize, fontweight='bold')
 
 
 
