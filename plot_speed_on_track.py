@@ -14,9 +14,9 @@ from matplotlib.collections import LineCollection
 ##############################################################################
 # First, we define some variables that allow us to conveniently control what
 # we want to plot.
-year = 2023
+"""year = 2023
 wknd = 11
-ses = 'R'
+ses = 'R'"""
 driver = 'VER'
 colormap = mpl.cm.plasma
 
@@ -24,7 +24,7 @@ colormap = mpl.cm.plasma
 ##############################################################################
 # Next, we load the session and select the desired data.
 #session = ff1.get_session(year, wknd, ses)
-session = ff1.get_session(2023, "British", 'R')
+session = ff1.get_session(2022, "Belgium", 'R')
 weekend = session.event
 session.load()
 lap = session.laps.pick_driver(driver).pick_fastest()

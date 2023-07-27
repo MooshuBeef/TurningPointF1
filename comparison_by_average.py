@@ -1,6 +1,6 @@
 """Driver Laptimes Distribution Visualization
 =============================================
-Visualizae different drivers' laptime distributions.
+Visualize different drivers' laptime distributions.
 """
 
 import fastf1
@@ -20,10 +20,10 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 ###############################################################################
 # Load the race session
 
-race = fastf1.get_session(2023, "Hungary", 'R')
+race = fastf1.get_session(2023, "Silverstone", 'R')
 race.load()
 
-# set a threshold of fast laps for cleanliness
+# set a threshold of fast laps for cleanliness˘
 # Typically it's 1.1, but for messy races like Monaco 2023, 2.0 is needed
 fastLapThreshold = 1.1
 
