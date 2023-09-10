@@ -51,13 +51,16 @@ print(did_not_finish)
 
 # This spits out a 1 column array with the point finishers
 point_finishers = race.drivers[:finished_count]
-# print(point_finishers)
-driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps(fastLapThreshold).reset_index()
-no_finish_laps = race.laps.pick_drivers(did_not_finish['DriverNumber'])
 
+#Now we can get the data for all the points finishers
+driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps(fastLapThreshold).reset_index()
+
+#Let's get the maximum lap from those who didn't finish
+no_finish_laps = race.laps.pick_drivers(did_not_finish['DriverNumber'])
 no_finish_last_lap = no_finish_laps.groupby('DriverNumber')['LapNumber'].max()
 #print(no_finish_last_lap)
 
+#Create a new variable with the driver, reason for retirement, and last lap completed
 did_not_finish = did_not_finish.merge(no_finish_last_lap, left_on='DriverNumber', right_index=True, how='left')
 did_not_finish = did_not_finish.rename(columns={'LapNumber': 'LastLap'})
 print(did_not_finish)
@@ -78,7 +81,7 @@ driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for abv,
 driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
 # print(driver_colors)
 
-# So actually let's get the lap times in seconds which we can do calculations with
+# Get the lap times in seconds which we can do calculations with
 driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
 driver_laps["Sector1(s)"] = driver_laps["Sector1Time"].dt.total_seconds()
 driver_laps["Sector2(s)"] = driver_laps["Sector2Time"].dt.total_seconds()
@@ -94,9 +97,6 @@ percentile_sector_1 = driver_laps.groupby('Driver')['Sector1(s)'].mean()
 percentile_sector_2 = driver_laps.groupby('Driver')['Sector2(s)'].mean()
 percentile_sector_3 = driver_laps.groupby('Driver')['Sector3(s)'].mean()
 
-### Not sorting the below yet
-# Sort the average lap times in ascending order
-# sorted_percentile_lap_times = percentile_lap_times.sort_values()
 
 # Find Median time from the 90th percentile
 #percentile_lap_times_int = percentile_lap_times.astype(int)
@@ -329,31 +329,6 @@ for ax in plt.gcf().get_axes():
     ax.set_title(ax.get_title(), fontsize=12)  # Set the font size (12 points in this example)
 
 
-# draw vertical lines behind the bars
-#ax.set_axisbelow(True)
-#ax.xaxis.grid(True, which='major', linestyle='--', color='black', zorder=-1000)
-# sphinx_gallery_defer_figures
-
-
-##############################################################################
-# Finally, give the plot a meaningful title
-
-#lap_time_string = strftimedelta(pole_lap['LapTime'], '%m:%s.%ms')
-
-
-
-# Add excluded laps information to the footer of the plot
-#footer_text = " ".join(f"{driver}: {time}" for driver, time in zip(excluded_laps['Driver'], excluded_laps['LapTime']))
-#plt.figtext(0.7, 0.01, footer_text, ha="center", fontsize=10, bbox={"facecolor": "white", "edgecolor": "gray", "pad": 5})
-
-"""
-ax1.annotate((f"{driver}: {time}" for driver, time in zip(excluded_laps['Driver'], excluded_laps['LapTime'])),
-    xy=(0.5,-0.02),
-        xycoords='axes fraction',
-        ha='right',
-        va='center',
-        fontsize=10)
-"""
 plt.tight_layout()  # Adjust the layout to prevent text cutoff
 
 plt.show()
