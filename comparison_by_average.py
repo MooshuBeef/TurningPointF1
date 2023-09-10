@@ -20,11 +20,11 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 ###############################################################################
 # Load the race session
 
-race = fastf1.get_session(2023, "Silverstone", 'R')
+race = fastf1.get_session(2023, "Italy", 'R')
 race.load()
 
 # set a threshold of fast laps for cleanliness˘
-# Typically it's 1.1, but for messy races like Monaco 2023, 2.0 is needed
+# Typically it's 1.07, but for messy races like Monaco 2023, 2.0 is needed
 fastLapThreshold = 1.1
 
 # Set percentile value
@@ -35,26 +35,33 @@ percentile_value = 0.95
 # Filter out slow laps (yellow flag, VSC, pitstops etc.)
 # as they distort the graph axis.
 
+#Let's try to identify the number of race finishers
+race_results = race.results
+
+# Count how many drivers finished the race successfully
+finished_count = len(race_results[race_results['Status'].isin(['Finished', '+1 Lap', '+2 Laps'])])
+
+# Create a variable to store driver names and their statuses for those who didn't finish
+did_not_finish = race_results[~race_results['Status'].isin(['Finished', '+1 Lap', '+2 Laps'])][['DriverNumber', 'Abbreviation', 'Status']]
+
+# Print the counts and the DataFrame for drivers who didn't finish
+print("Number of drivers who finished the race:", finished_count)
+print("\nDrivers who didn't finish:")
+print(did_not_finish)
+
 # This spits out a 1 column array with the point finishers
-point_finishers = race.drivers[:20]
+point_finishers = race.drivers[:finished_count]
 # print(point_finishers)
 driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps(fastLapThreshold).reset_index()
+no_finish_laps = race.laps.pick_drivers(did_not_finish['DriverNumber'])
 
-###############################################################################
-# Trying to account for the laps that are excluded
-"""
-# Get lap times before filtering
-lap_times_before_filtering = driver_laps[['LapTime', 'Driver']]
+no_finish_last_lap = no_finish_laps.groupby('DriverNumber')['LapNumber'].max()
+#print(no_finish_last_lap)
 
-# Filter out slow laps (yellow flag, VSC, pit stops, etc.)
-driver_laps_filtered = driver_laps.pick_quicklaps(fastLapThreshold)
+did_not_finish = did_not_finish.merge(no_finish_last_lap, left_on='DriverNumber', right_index=True, how='left')
+did_not_finish = did_not_finish.rename(columns={'LapNumber': 'LastLap'})
+print(did_not_finish)
 
-# Get lap times after filtering
-lap_times_after_filtering = driver_laps_filtered[['LapTime', 'Driver']]
-
-# Find the laps that were excluded
-excluded_laps = lap_times_before_filtering[~lap_times_before_filtering['LapTime'].isin(lap_times_after_filtering['LapTime'])]
-"""
 
 ###############################################################################
 # To plot the drivers by finishing order,
@@ -157,6 +164,9 @@ plt.subplots_adjust(hspace=0.5)  # Increase the vertical spacing between subplot
 plt.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.9)
 
 
+# Assuming 'diff to median' contains NaN values
+final_data_sorted['diff to median'].fillna('gray', inplace=True)
+
 ax1.title.set_text(plot_title)
 ax1.bar(final_data_sorted['DRIVERS'], final_data_sorted['diff to median'],
         color=final_data_sorted['DRIVERS'].map(driver_colors),
@@ -170,6 +180,21 @@ ax1.invert_yaxis()
 # remove driver names and tick marks along the bottom of the graph
 ax1.set_xticklabels([])
 ax1.set_xticks([])
+
+# Calculate y-coordinate for the text box
+y_coord = -0.12  # Adjust this value as needed
+
+# Create a text box with a white background to serve as a legend
+legend_text = '\n'.join([f"{driver} retired Lap {int(last_lap)} ({status})" for driver, last_lap, status in zip(did_not_finish['Abbreviation'], did_not_finish['LastLap'], did_not_finish['Status'])])
+ax1.text(0.02, 0.02*(20-finished_count), legend_text, ha='left', va='top', fontsize=10, fontweight='bold', bbox=dict(facecolor='black', edgecolor='black', boxstyle='round'), transform=ax1.transAxes)
+#ax1.text(12.5, -1.0, legend_text, ha='left', va='top', fontsize=10, fontweight='bold', bbox=dict(facecolor='black', edgecolor='black', boxstyle='round'))
+#ax1.text(0.5, y_coord, legend_text, ha='center', va='center', fontsize=10, fontweight='bold', bbox=dict(facecolor='white', edgecolor='black', boxstyle='round'))
+
+# Hide the x-axis labels for ax1
+ax1.set_xticks([])
+
+# Adjust the plot layout to make space for the text box
+plt.tight_layout()
 
 
 ax2.bar(final_data_sorted['DRIVERS'], final_data_sorted['Sector1_DTM(s)'],
