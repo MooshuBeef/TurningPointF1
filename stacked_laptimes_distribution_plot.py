@@ -9,14 +9,14 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 ###############################################################################
 # Load the race session
 
-race = fastf1.get_session(2023, "British", 'R')
+race = fastf1.get_session(2023, "Singapore", 'R')
 race.load()
 
 ###############################################################################
 # Get all the laps for the point finishers only.
 # Filter out slow laps (yellow flag, VSC, pitstops, etc.)
 # as they distort the graph axis.
-point_finishers = race.drivers[:20]
+point_finishers = race.drivers[:19]
 print(point_finishers)
 driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
 driver_laps = driver_laps.reset_index()

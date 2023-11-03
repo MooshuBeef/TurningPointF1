@@ -20,12 +20,12 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 ###############################################################################
 # Load the race session
 
-race = fastf1.get_session(2023, "Italy", 'R')
+race = fastf1.get_session(2023, "Singapore", 'R')
 race.load()
 
 # set a threshold of fast laps for cleanliness˘
 # Typically it's 1.07, but for messy races like Monaco 2023, 2.0 is needed
-fastLapThreshold = 1.1
+fastLapThreshold = 1.07
 
 # Set percentile value
 percentile_value = 0.95
@@ -44,13 +44,22 @@ finished_count = len(race_results[race_results['Status'].isin(['Finished', '+1 L
 # Create a variable to store driver names and their statuses for those who didn't finish
 did_not_finish = race_results[~race_results['Status'].isin(['Finished', '+1 Lap', '+2 Laps'])][['DriverNumber', 'Abbreviation', 'Status']]
 
+#IN case the did not finish rows needs to be deleted for an error
+rows_to_delete = 1
+did_not_finish = did_not_finish.iloc[:-rows_to_delete]
+
+
 # Print the counts and the DataFrame for drivers who didn't finish
 print("Number of drivers who finished the race:", finished_count)
 print("\nDrivers who didn't finish:")
 print(did_not_finish)
 
 # This spits out a 1 column array with the point finishers
+#point_finishers = race.drivers[:finished_count]
+
+# This spits out a 1 column array with the point finishers
 point_finishers = race.drivers[:finished_count]
+
 
 #Now we can get the data for all the points finishers
 driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps(fastLapThreshold).reset_index()
