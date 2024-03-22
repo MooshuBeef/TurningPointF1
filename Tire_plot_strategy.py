@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 ###############################################################################
 # Load the race session
 
-session = fastf1.get_session(2023, "Hungary", 'R')
+session = fastf1.get_session(2023, "Saudi Arabia", 'R')
 session.load()
 laps = session.laps
 

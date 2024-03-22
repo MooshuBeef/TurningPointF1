@@ -20,7 +20,7 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 ###############################################################################
 # Load the race session
 
-race = fastf1.get_session(2023, "Japan", 'FP1')
+race = fastf1.get_session(2024, "Saudi Arabia", 'R')
 race.load()
 
 # set a threshold of fast laps for cleanliness˘

@@ -24,7 +24,7 @@ colormap = mpl.cm.plasma
 ##############################################################################
 # Next, we load the session and select the desired data.
 #session = ff1.get_session(year, wknd, ses)
-session = ff1.get_session(2022, "Belgium", 'R')
+session = ff1.get_session(2023, "Bahrain", 'R')
 weekend = session.event
 session.load()
 lap = session.laps.pick_driver(driver).pick_fastest()

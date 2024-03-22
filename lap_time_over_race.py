@@ -7,7 +7,8 @@ from matplotlib import pyplot as plt
 fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
 # Load the race session
-race = fastf1.get_session(2023, "Singapore", 'R')
+race = fastf1.get_session(2023, "Abu Dhabi", 'R')
+# race = fastf1.get_session(2023, "Singapore", 'R')
 race.load()
 
 # Get all the laps for the point finishers only.
