@@ -20,12 +20,12 @@ fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 ###############################################################################
 # Load the race session
 
-race = fastf1.get_session(2024, "Saudi Arabia", 'R')
+race = fastf1.get_session(2023, "Mexico", 'R')
 race.load()
 
 # set a threshold of fast laps for cleanliness˘
 # Typically it's 1.07, but for messy races like Monaco 2023, 2.0 is needed
-fastLapThreshold = 1.25
+fastLapThreshold = 1.07
 
 # Set percentile value
 percentile_value = 0.95

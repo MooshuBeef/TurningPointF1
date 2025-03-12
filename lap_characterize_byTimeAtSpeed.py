@@ -7,7 +7,7 @@ import pandas as pd
 plotting.setup_mpl()
 
 #year, grand_prix, session = 2022, 'Qatar', 'R'
-year, grand_prix, session = 2024, "Bahrain", 'R'
+year, grand_prix, session = 2024, 9, 'R'
 
 race = ff1.get_session(year, grand_prix, session)
 race.load()
